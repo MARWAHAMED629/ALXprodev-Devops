@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# === Task: Fetch Pokémon data for Pikachu from the API ===
+# Output file
+OUTPUT_FILE="data.json"
+# Error log file
+ERROR_FILE="errors.txt"
+# API URL
+POKEMON_API="https://pokeapi.co/api/v2/pokemon/pikachu"
+
+# Make API request using curl
+response=$(curl -s -w "%{http_code}" -o "$OUTPUT_FILE" "$POKEMON_API")
+status_code="${response:(-3)}"
+
+# Check if request was successful
+if [ "$status_code" -ne 200 ]; then
+    echo "[ERROR] Failed to fetch data for Pikachu. HTTP status: $status_code" >> "$ERROR_FILE"
+    echo "An error occurred. Check $ERROR_FILE for details."
+    # Remove the possibly incomplete file
+    rm -f "$OUTPUT_FILE"
+else
+    echo "Data for Pikachu saved to $OUTPUT_FILE ✅"
+fi
