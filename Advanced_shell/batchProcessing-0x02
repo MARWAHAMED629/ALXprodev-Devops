@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# === Task 4: Batch Retrieval with Retry Logic ===
+
+POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+OUTPUT_DIR="pokemon_data"
+ERROR_LOG="errors.txt"
+
+mkdir -p "$OUTPUT_DIR"
+> "$ERROR_LOG"
+
+for name in "${POKEMON_LIST[@]}"; do
+    echo "Fetching data for $name..."
+
+    attempt=1
+    success=false
+
+    while [ $attempt -le 3 ]; do
+        # جلب البيانات واحتفظ بحالة HTTP في متغير
+        response=$(curl -s -w "%{http_code}" -o "$OUTPUT_DIR/$name.json" "https://pokeapi.co/api/v2/pokemon/$name")
+        status="${response:(-3)}"
+
+        if [ "$status" -eq 200 ]; then
+            echo "Saved data to $OUTPUT_DIR/$name.json ✅"
+            success=true
+            break
+        else
+            echo "Attempt $attempt failed for $name (HTTP $status)"
+            ((attempt++))
+            sleep 1
+        fi
+    done
+
+    if [ "$success" = false ]; then
+        echo "[ERROR] Failed to fetch $name after 3 attempts ❌" | tee -a "$ERROR_LOG"
+        rm -f "$OUTPUT_DIR/$name.json"
+    fi
+done
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# === Task 1: Extract Pikachu's data from data.json ===
+
+# Check if the file exists
+if [ ! -f "data.json" ]; then
+  echo "data.json not found. Please run the previous script to generate it."
+  exit 1
+fi
+
+# Extract fields from JSON using jq
+name=$(jq -r '.name' data.json | sed 's/.*/\u&/')  # Capitalize name
+height=$(jq '.height' data.json | awk '{printf "%.1f", $1 / 10}') # convert dm to m
+weight=$(jq '.weight' data.json | awk '{printf "%.1f", $1 / 10}') # convert hg to kg
+type=$(jq -r '.types[0].type.name' data.json | sed 's/.*/\u&/')   # Capitalize type
+
+# Print the formatted output
+echo "$name is of type $type, weighs ${weight}kg, and is ${height}m tall."
